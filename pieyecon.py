@@ -18,6 +18,8 @@ while True:
     drawMenu()
     op = str(raw_input("Operation Selection:"))
     if op == "b":
+        if os.path.isdir("/tmp/pieye") is not True:
+            os.mkdir("/tmp/pieye")
         if os.path.isfile("/tmp/pieye/givemeinfo.txt") is not True:
             os.mknod("/tmp/pieye/givemeinfo.txt")
         fp = open("/tmp/pieye/givemeinfo.txt","w")

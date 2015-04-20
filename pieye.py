@@ -243,6 +243,7 @@ def parseCommand(s):
         # empty info info
         # sendMessageToPMU("empty!9")
         # cpu info
+        waitSender()
         tellPMUInfo()
     elif s.find("rualive") > -1:
         waitSender()
@@ -278,21 +279,21 @@ def tmpFolderMonitor(no,interval):
     while True:
         if exitThread == True:
             thread.exit_thread()
-        l = os.listdir("/tmp/pieye")
+        checkTmpFolder()
+        l = os.listdir("/tmp/pieye/")
         if len(l) > 0:
             for i in l:
                 if os.path.isdir("/tmp/pieye/" + str(i)) is True:
                     waitSender()
                     sendMessageToPMU(str(i))
-                    os.rmdir("/tmp/pieye/" + str(i))
+                    if str(i) != "":
+                        os.rmdir("/tmp/pieye/" + str(i))
                     sleep(1)
         if os.path.isfile("/tmp/pieye/givemeinfo.txt") is True:
             os.remove("/tmp/pieye/givemeinfo.txt")
             waitSender()
             sendMessageToPMU("givemeinfo")
             
-    
-    
 # software serial monitor
 def softSerialMonitor(no,interval):
     global exitThread
@@ -423,6 +424,7 @@ def savePmuInfo(s):
     fp = open("/home/pi/pieyelog.txt","a")
     fp.write(strPmuInfoItem)
     fp.close()
+    checkTmpFolder()
     fp = open("/tmp/pieye/pieyelog.txt","w")
     fp.write(strPmuInfoItem)
     fp.close()
@@ -438,27 +440,28 @@ def checkPmuInfo(no,interval):
         waitSender()
         sendMessageToPMU("givemeinfo")
         
-def createTmpFolder():
+def checkTmpFolder():
     if firstStart is not True:
         if os.path.isdir("/tmp/pieye") is not True:
             os.mkdir("/tmp/pieye")
-        
+
+def createThread():
+    tMon = thread.start_new_thread(softSerialMonitor,(1,0))  
+    tPmuMon = thread.start_new_thread(checkPmuInfo,(1,60))  
+    tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,0))  
+
 print "PiEye V1.0"
 print ""
 print "please run me in background like 'sudo python pieye.py &'"
 print "or add me to /etc/rc.local"
 
-tMon = thread.start_new_thread(softSerialMonitor,(1,0))  
-tPmuMon = thread.start_new_thread(checkPmuInfo,(1,60))  
-tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,0))  
-
 while True:
     if firstStart is not True:
-        createTmpFolder()
+        checkTmpFolder()
+        createThread()
         waitSender()
         sendMessageToPMU("I've started!")
         firstStart = True
-        createTmpFolder()
         waitSender()
         sendMessageToPMU("givemeinfo")
     #softSerialMonitor()

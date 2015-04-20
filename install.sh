@@ -23,10 +23,10 @@ numfinala=$numfinal"a"
 c2=$(grep -n '^sudo python /usr/bin/pieye.py' /etc/rc.local)
 c1=$(grep -n '^sudo pigpiod' /etc/rc.local)
 if [ -z "$c2" ]; then
-  sed -i "$numfinala sudo python /home/pi/pieye.py" /etc/rc.local
+  sed -i "$numfinala sudo python /usr/bin/pieye.py" /etc/rc.local
 fi
 if [ -z "$c1" ]; then
   sed -i "$numfinala sudo pigpiod" /etc/rc.local
 fi
-echo "Finally run program..."
-sudo python pieyecon.py
+echo "Please Run sudo reboot!"
+echo "After reboot you shoud run sudo python /usr/bin/pieyecon.py"
