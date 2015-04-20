@@ -104,9 +104,9 @@ def savePmuInfo(s):
     strPmuInfoItem = strPmuInfoItem + "LogTime:"
     strPmuInfoItem = strPmuInfoItem + time.strftime('[%Y-%m-%d]-%H:%M:%S',time.localtime(time.time()))
     strPmuInfoItem = strPmuInfoItem + "\n"
-    if os.path.isfile("pmulog.txt") is not True:
-        os.mknod("pmulog.txt")
-    fp = open("pmulog.txt","a")
+    if os.path.isfile("/home/pi/pieyelog.txt") is not True:
+        os.mknod("/home/pi/pieyelog.txt")
+    fp = open("/home/pi/pieyelog.txt","a")
     fp.write(strPmuInfoItem)
     fp.close()
     #ID|DumpEnergy|BatVoltage|InputCurrent|ChargeCurrent|ChargeVoltage|DateTime
@@ -418,9 +418,9 @@ def savePmuInfo(s):
     strPmuInfoItem = strPmuInfoItem + "LogTime:"
     strPmuInfoItem = strPmuInfoItem + time.strftime('[%Y-%m-%d]-%H:%M:%S',time.localtime(time.time()))
     strPmuInfoItem = strPmuInfoItem + "\n"
-    if os.path.isfile("pieyelog.txt") is not True:
-        os.mknod("pieyelog.txt")
-    fp = open("pieyelog.txt","a")
+    if os.path.isfile("/home/pi/pieyelog.txt") is not True:
+        os.mknod("/home/pi/pieyelog.txt")
+    fp = open("/home/pi/pieyelog.txt","a")
     fp.write(strPmuInfoItem)
     fp.close()
     fp = open("/tmp/pieye/pieyelog.txt","w")
