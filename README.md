@@ -12,9 +12,6 @@ sudo pigpiod
 STEP 2: install 
 sudo apt-get install python-netifaces python-psutil
 
-STEP 3: run program
-sudo python pmurpi.py
-
-wget -c https://raw.githubusercontent.com/FishTest/pieye/master/install.sh
+wget -c https://raw.githubusercontent.com/FishTest/pipeye/master/install.sh
 chmod +x ./install.sh
 sudo ./install.sh
