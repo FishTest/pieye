@@ -293,6 +293,7 @@ def tmpFolderMonitor(no,interval):
             os.remove("/tmp/pipeye/givemeinfo.txt")
             waitSender()
             sendMessageToPMU("givemeinfo")
+        sleep(interval)
             
 # software serial monitor
 def softSerialMonitor(no,interval):
@@ -448,7 +449,7 @@ def checkTmpFolder():
 def createThread():
     tMon = thread.start_new_thread(softSerialMonitor,(1,0))  
     tPmuMon = thread.start_new_thread(checkPmuInfo,(1,60))  
-    tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,0))  
+    tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,1))  
 
 print "pipeye V1.0"
 print ""
