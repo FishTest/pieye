@@ -35,5 +35,5 @@ while True:
         sleep(0.5)
         sys.exit()
     else:
-        if op != "":
+        if (op != "") and (os.path.isdir("/tmp/pipeye/" + str(op)[0:84]) is not True):
             os.mkdir("/tmp/pipeye/" + str(op)[0:84])
