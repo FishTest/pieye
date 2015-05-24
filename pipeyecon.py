@@ -5,6 +5,9 @@ import sys
 import time
 from time import sleep
 
+tmpFolder = "/var/pipeyelog/"
+tmpFile = tmpFolder + "pipeyelog.txt"
+
 def drawMenu():
     print "-------------------------"
     print "Operation Selection:"
@@ -18,16 +21,16 @@ while True:
     drawMenu()
     op = str(raw_input("Operation Selection:"))
     if op == "b":
-        if os.path.isdir("/tmp/pipeye") is not True:
-            os.mkdir("/tmp/pipeye")
-        if os.path.isfile("/tmp/pipeye/givemeinfo.txt") is not True:
-            os.mknod("/tmp/pipeye/givemeinfo.txt")
-        fp = open("/tmp/pipeye/givemeinfo.txt","w")
+        if os.path.isdir(tmpFolder) is not True:
+            os.mkdir(tmpFolder)
+        if os.path.isfile(tmpFolder + "givemeinfo.txt") is not True:
+            os.mknod(tmpFolder + "givemeinfo.txt")
+        fp = open(tmpFolder + "givemeinfo.txt","w")
         fp.write("givemeinfo")
         fp.close()
         sleep(1)
-        if os.path.isfile("/tmp/pipeye/pipeyelog.txt") is True:
-            fp = open("/tmp/pipeye/pipeyelog.txt","r")
+        if os.path.isfile(tmpFolder + "pipeyelog.txt") is True:
+            fp = open(tmpFolder + "pipeyelog.txt","r")
             info = fp.readline()
             print info
             fp.close()
@@ -35,5 +38,5 @@ while True:
         sleep(0.5)
         sys.exit()
     else:
-        if (op != "") and (os.path.isdir("/tmp/pipeye/" + str(op)[0:84]) is not True):
-            os.mkdir("/tmp/pipeye/" + str(op)[0:84])
+        if (op != "") and (os.path.isdir(tmpFolder + str(op)[0:84]) is not True):
+            os.mkdir(tmpFolder + str(op)[0:84])

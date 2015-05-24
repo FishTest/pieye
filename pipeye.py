@@ -7,6 +7,7 @@ import pigpio  #pigpio库
 import netifaces
 import thread
 import psutil
+import threading
 from time import sleep
 
 # software serial para
@@ -20,6 +21,11 @@ op = ""
 firstStart = False
 busy = False
 debugmode = 0
+logFolder = "/home/pi/"
+logfile = ""
+tmpFolder = "/var/pipeyelog/"
+tmpFile = tmpFolder + "pipeyelog.txt"
+mutex = threading.Lock()
 
 # convert battery voltage to real value
 def convertBatVoltage(v):
@@ -187,111 +193,106 @@ def getDiskSpace():
             return(line.split()[1:5])
             
 def tellPMUInfo():
-    waitSender()
+    
     sleep(0.1)
     sendMessageToPMU(str(getCPUuse()) + "!0")
-    waitSender()
+    
     sendMessageToPMU(str(getCPUtemperature()) + "!1")
     # ram info
     RAM_stats = getRAMinfo()
-    waitSender()
+    
     sendMessageToPMU(str(round(int(RAM_stats[0]) / 1000,1)) + "!2")
-    waitSender()
+    
     sendMessageToPMU(str(round(int(RAM_stats[1]) / 1000,1)) + "!3")
-    waitSender()
+    
     sendMessageToPMU(str(round((int(RAM_stats[0]) - int(RAM_stats[1])) / 1000,1)) + "!4")
     # disk info
     DISK_stats = getDiskSpace()
-    waitSender()
+    
     diskTotal = float(DISK_stats[0].replace("G",""))
-    waitSender()
+    
     diskUsed  = float(DISK_stats[1].replace("G",""))
-    waitSender()
+    
     diskFree = diskTotal - diskUsed
-    waitSender()
+    
     sendMessageToPMU(str(diskTotal) + "!5")
-    waitSender()
+    
     sendMessageToPMU(str(diskUsed) + "!6")
-    waitSender()
+    
     sendMessageToPMU(str(diskFree) + "!7")
     
     # network info
     eth0ip = getAdpaterAddress('eth0')
     if eth0ip == "":
         eth0ip = "none"
-    waitSender()
+    
     sendMessageToPMU(eth0ip + "!8")
     wlan0ip = getAdpaterAddress('wlan0')
-    waitSender()
+    
     sendMessageToPMU(wlan0ip + "!9")
 # parse command recevied from serial
 def parseCommand(s):
     if s == "shutdown":
         print "shutdown"
-        waitSender()
-        sendMessageToPMU("pi is halting...");
+        
+        sendMessageToPMU("[RPI]:I'm halting...");
         os.system("sudo halt -h")
     elif s == "reboot":
         print "reboot"
-        waitSender()
-        sendMessageToPMU("pi is rebooting...");
+        
+        sendMessageToPMU("[RPI]:I'm rebooting...");
         os.system("sudo reboot")
     elif s == "Hello Raspberry PI!":
-        waitSender()
+        
         sendMessageToPMU("Hello PMU!")
     elif s == "givemeinfo":
         # empty info info
         # sendMessageToPMU("empty!9")
         # cpu info
-        waitSender()
+        
         tellPMUInfo()
     elif s.find("rualive") > -1:
-        waitSender()
+        
         sendMessageToPMU(s.replace("rualive!","") + "!:")
         tellPMUInfo()
 
-# wait if busy
-def waitSender():
-    global busy
-    while busy:
-        pass
-
 # Send message to PMU
 def sendMessageToPMU(msg):
-    global busy
-    busy = True
-    msg = msg[0:84]
-    msg = "~" + msg + "~"
-    #pi.wave_clear()
-    pi.wave_add_serial(TX, baud, bytearray(msg))
-    while pi.wave_tx_busy(): # wait until all data sent
-        pass
-    #wid=
-    wid = pi.wave_create()
-    pi.wave_send_once(wid)   # transmit serial data
-    #pi.wave_clear()
-    pi.wave_delete(wid)
-    busy = False
+    if mutex.acquire(1): 
+        print msg
+        msg = msg[0:84]
+        msg = "~" + msg + "~"
+        #pi.wave_clear()
+        pi.wave_add_serial(TX, baud, bytearray(msg))
+        while pi.wave_tx_busy(): # wait until all data sent
+            pass
+        #wid=
+        wid = pi.wave_create()
+        pi.wave_send_once(wid)   # transmit serial data
+        #pi.wave_clear()
+        pi.wave_delete(wid)
+        mutex.release()
+
    # sleep(0.1)
     
 def tmpFolderMonitor(no,interval):
-    global exitThread
+    global exitThread,tmpFolder,tmpFile
     while True:
         if exitThread == True:
             thread.exit_thread()
         checkTmpFolder()
-        l = os.listdir("/tmp/pipeye/")
+        l = os.listdir(tmpFolder)
         if len(l) > 0:
             for i in l:
-                if os.path.isdir("/tmp/pipeye/" + str(i)) is True:
-                    waitSender()
+                if os.path.isdir(tmpFolder + str(i)) is True:
+                    
                     sendMessageToPMU(str(i))
                     if str(i) != "":
-                        os.rmdir("/tmp/pipeye/" + str(i))
+                        os.rmdir(tmpFolder + str(i))
                     sleep(1)
-        if os.path.isfile("/tmp/pipeye/givemeinfo.txt") is True:
-            os.remove("/tmp/pipeye/givemeinfo.txt")
-            waitSender()
+        if os.path.isfile(tmpFolder + "givemeinfo.txt") is True:
+            os.remove(tmpFolder + "givemeinfo.txt")
+            
             sendMessageToPMU("givemeinfo")
         sleep(interval)
             
@@ -391,9 +392,18 @@ def convertChargeVoltage(v):
         offsetVoltage = offsetVoltage + 0.016
     return str(offsetVoltage) + "V"
 
+def createFolder(f):
+    if os.path.isdir(f) is not True:
+        os.mkdir(f) 
+    
+def createFile(f):
+    if os.path.isfile(f) is not True:
+        os.mknod(f)
+
 
 # save pmu info to file
 def savePmuInfo(s):
+    global logFolder,logFile,tmpFolder,tmpFile
     strPmuInfo = s.split("|")
     strPmuInfoItem = ""
     strPmuInfoItem = strPmuInfoItem + "ID:"
@@ -420,13 +430,18 @@ def savePmuInfo(s):
     strPmuInfoItem = strPmuInfoItem + "LogTime:"
     strPmuInfoItem = strPmuInfoItem + time.strftime('[%Y-%m-%d]-%H:%M:%S',time.localtime(time.time()))
     strPmuInfoItem = strPmuInfoItem + "\n"
-    if os.path.isfile("/home/pi/pipeyelog.txt") is not True:
-        os.mknod("/home/pi/pipeyelog.txt")
-    fp = open("/home/pi/pipeyelog.txt","a")
+    createFolder(logFolder)
+    logFile = logFolder + "pipeye_" + time.strftime('[%Y-%m-%d]' + ".txt")
+    createFile(logFile)
+    #if os.path.isfile("/home/pi/pipeyelog.txt") is not True:
+    #    os.mknod("/home/pi/pipeyelog.txt")
+    fp = open(logFile,"a")
     fp.write(strPmuInfoItem)
     fp.close()
+    createFolder(tmpFolder)
+    createFile(tmpFile)
     checkTmpFolder()
-    fp = open("/tmp/pipeye/pipeyelog.txt","w")
+    fp = open(tmpFile,"w")
     fp.write(strPmuInfoItem)
     fp.close()
     
@@ -438,32 +453,33 @@ def checkPmuInfo(no,interval):
             print "[pipeye Monitor]:exit"
             thread.exit_thread()
         sleep(interval)
-        waitSender()
+        
         sendMessageToPMU("givemeinfo")
         
 def checkTmpFolder():
+    global tmpFolder
     if firstStart is not True:
-        if os.path.isdir("/tmp/pipeye") is not True:
-            os.mkdir("/tmp/pipeye")
+        if os.path.isdir(tmpFolder) is not True:
+            os.mkdir(tmpFolder)
 
 def createThread():
     tMon = thread.start_new_thread(softSerialMonitor,(1,0))  
     tPmuMon = thread.start_new_thread(checkPmuInfo,(1,60))  
-    tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,1))  
+    tTmpFolder = thread.start_new_thread(tmpFolderMonitor,(1,0.5))  
 
-print "pipeye V1.0"
-print ""
-print "please run me in background like 'sudo python pipeye.py &'"
-print "or add me to /etc/rc.local"
+#print "pipeye V1.0"
+#print ""
+#print "please run me in background like 'sudo python pipeye.py &'"
+#print "or add me to /etc/rc.local"
 
 while True:
     if firstStart is not True:
         checkTmpFolder()
         createThread()
-        waitSender()
+        
         sendMessageToPMU("I've started!")
         firstStart = True
-        waitSender()
+        
         sendMessageToPMU("givemeinfo")
     #softSerialMonitor()
     
@@ -476,7 +492,7 @@ while True:
         print "-------------------------"
         op = str(raw_input("Operation Selection:"))
         if op == "b":
-            waitSender()
+            
             sendMessageToPMU("givemeinfo")
         elif op == "e":
             exitThread = True

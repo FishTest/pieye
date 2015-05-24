@@ -23,7 +23,7 @@ numfinala=$numfinal"a"
 c2=$(grep -n '^sudo python /usr/bin/pipeye.py' /etc/rc.local)
 c1=$(grep -n '^sudo pigpiod' /etc/rc.local)
 if [ -z "$c2" ]; then
-  sed -i "$numfinala sudo python /usr/bin/pipeye.py" /etc/rc.local
+  sed -i "$numfinala sudo python /usr/bin/pipeye.py &" /etc/rc.local
 fi
 if [ -z "$c1" ]; then
   sed -i "$numfinala sudo pigpiod" /etc/rc.local
