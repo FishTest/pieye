@@ -22,9 +22,14 @@ sudo pigpiod
 sudo /usr/bin/pipeye.py
 
 STEP 5:
-sudo reboot
+sudo nano /etc/fstab
+add below line at the end
+tmpfs   /var/pipeyelog    tmpfs    defaults,noatime,nosuid,mode=0755,size=1m    0 0
 
 STEP 6:
+sudo reboot
+
+STEP 7:
 run program:
 sudo python /usr/bin/pipeyecon.py
 
