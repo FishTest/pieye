@@ -193,73 +193,64 @@ def getDiskSpace():
             return(line.split()[1:5])
             
 def tellPMUInfo():
-    
-    sleep(0.1)
+    sleep(0.15)
     sendMessageToPMU(str(getCPUuse()) + "!0")
-    
+    sleep(0.15)
     sendMessageToPMU(str(getCPUtemperature()) + "!1")
     # ram info
     RAM_stats = getRAMinfo()
-    
+    sleep(0.15)
     sendMessageToPMU(str(round(int(RAM_stats[0]) / 1000,1)) + "!2")
-    
+    sleep(0.15)
     sendMessageToPMU(str(round(int(RAM_stats[1]) / 1000,1)) + "!3")
-    
+    sleep(0.15)
     sendMessageToPMU(str(round((int(RAM_stats[0]) - int(RAM_stats[1])) / 1000,1)) + "!4")
     # disk info
     DISK_stats = getDiskSpace()
-    
     diskTotal = float(DISK_stats[0].replace("G",""))
-    
     diskUsed  = float(DISK_stats[1].replace("G",""))
-    
     diskFree = diskTotal - diskUsed
-    
+    sleep(0.15)
     sendMessageToPMU(str(diskTotal) + "!5")
-    
+    sleep(0.15)
     sendMessageToPMU(str(diskUsed) + "!6")
-    
+    sleep(0.15)
     sendMessageToPMU(str(diskFree) + "!7")
     
     # network info
     eth0ip = getAdpaterAddress('eth0')
     if eth0ip == "":
         eth0ip = "none"
-    
+    sleep(0.15)
     sendMessageToPMU(eth0ip + "!8")
     wlan0ip = getAdpaterAddress('wlan0')
-    
+    sleep(0.15)
     sendMessageToPMU(wlan0ip + "!9")
 # parse command recevied from serial
 def parseCommand(s):
     if s == "shutdown":
-        print "shutdown"
-        
+        #print "shutdown"
         sendMessageToPMU("[RPI]:I'm halting...");
         os.system("sudo halt -h")
     elif s == "reboot":
-        print "reboot"
-        
+        #print "reboot"
         sendMessageToPMU("[RPI]:I'm rebooting...");
         os.system("sudo reboot")
     elif s == "Hello Raspberry PI!":
-        
         sendMessageToPMU("Hello PMU!")
     elif s == "givemeinfo":
         # empty info info
         # sendMessageToPMU("empty!9")
         # cpu info
-        
         tellPMUInfo()
     elif s.find("rualive") > -1:
-        
         sendMessageToPMU(s.replace("rualive!","") + "!:")
         tellPMUInfo()
 
 # Send message to PMU
 def sendMessageToPMU(msg):
     if mutex.acquire(1): 
-        print msg
+        #print msg
         msg = msg[0:84]
         msg = "~" + msg + "~"
         #pi.wave_clear()
@@ -303,7 +294,7 @@ def softSerialMonitor(no,interval):
         if exitThread == True:
             pi.bb_serial_read_close(RX)
             pi.stop()
-            print "[sSerial Monitor]:exit"
+            #print "[sSerial Monitor]:exit"
             thread.exit_thread()
         count = 1
         strTemp = ""
@@ -450,7 +441,7 @@ def checkPmuInfo(no,interval):
     global exitThread
     while True:
         if exitThread == True:
-            print "[pipeye Monitor]:exit"
+            #print "[pipeye Monitor]:exit"
             thread.exit_thread()
         sleep(interval)
         
@@ -476,28 +467,7 @@ while True:
     if firstStart is not True:
         checkTmpFolder()
         createThread()
-        
         sendMessageToPMU("I've started!")
         firstStart = True
-        
         sendMessageToPMU("givemeinfo")
-    #softSerialMonitor()
-    
-    if debugmode == 1:
-        print "-------------------------"
-        print "Operation Selection:"
-        print "[b]:get battery info"
-        print "[e]:exit program"
-        print "[Enter]:display this menu"
-        print "-------------------------"
-        op = str(raw_input("Operation Selection:"))
-        if op == "b":
-            
-            sendMessageToPMU("givemeinfo")
-        elif op == "e":
-            exitThread = True
-            sleep(0.5)
-            sys.exit()
-        else:
-            sendMessageToPMU(op)
-    sleep(2)
+    sleep(3)
