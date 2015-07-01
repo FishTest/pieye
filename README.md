@@ -33,7 +33,6 @@ STEP 7:
 run program:
 sudo python /usr/bin/pipeyecon.py
 
-
 AllInOne Install:
 wget -c https://raw.githubusercontent.com/FishTest/pipeye/master/install.sh
 chmod +x ./install.sh
