@@ -467,7 +467,7 @@ while True:
     if firstStart is not True:
         checkTmpFolder()
         createThread()
-        sendMessageToPMU("I've started!")
+        #sendMessageToPMU("I've started!")
         firstStart = True
-        sendMessageToPMU("givemeinfo")
+        #sendMessageToPMU("givemeinfo")
     sleep(3)
