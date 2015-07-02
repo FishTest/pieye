@@ -26,64 +26,81 @@ logfile = ""
 tmpFolder = "/var/pipeyelog/"
 tmpFile = tmpFolder + "pipeyelog.txt"
 mutex = threading.Lock()
+r = ""
 
 # convert battery voltage to real value
 def convertBatVoltage(v):
-    return str('%0.2f' % (long(v,10) * 78.125 / 1000000)) + "V"
+    try:
+        r = str('%0.2f' % (long(v,10) * 78.125 / 1000000)) + "V"
+    except:
+        r = "Null.V"
+    return r
     
 # convert input current reg to value
 def convertInputCurrent(v):
-    tempCurrent = int(v,10) & 7
+    try:
+        tempCurrent = int(v,10) & 7
+    except:
+        tempCurrent = 8
+        
     if tempCurrent == 0:
-        return "0.1"
+        r = "0.1"
     elif tempCurrent == 1:
-        return "0.15"
+        r = "0.15"
     elif tempCurrent == 2:
-        return "0.5"
+        r = "0.5"
     elif tempCurrent == 3:
-        return "0.9"
+        r = "0.9"
     elif tempCurrent == 4:
-        return "1.2"
+        r = "1.2"
     elif tempCurrent == 5:
-        return "1.5"
+        r = "1.5"
     elif tempCurrent == 6:
-        return "2.0"
+        r = "2.0"
     elif tempCurrent == 7:
-        return "3.0"
+        r = "3.0"
+    return r
 
 # convert charge current reg to value
 def convertChargeCurrent(v):
     offsetCurrent = 0.512
-    if int(v,10) & 128 == 128:
-        offsetCurrent = offsetCurrent + 2.048
-    if int(v,10) & 64 == 64:
-        offsetCurrent = offsetCurrent + 1.024
-    if int(v,10) & 32 == 32:
-        offsetCurrent = offsetCurrent + 0.512
-    if int(v,10) & 16 == 16:
-        offsetCurrent = offsetCurrent + 0.256
-    if int(v,10) & 8  == 8:
-        offsetCurrent = offsetCurrent + 0.128
-    if int(v,10) & 4  == 4:
-        offsetCurrent = offsetCurrent + 0.64
-    return str(offsetCurrent)
+    try:
+        if int(v,10) & 128 == 128:
+            offsetCurrent = offsetCurrent + 2.048
+        if int(v,10) & 64 == 64:
+            offsetCurrent = offsetCurrent + 1.024
+        if int(v,10) & 32 == 32:
+            offsetCurrent = offsetCurrent + 0.512
+        if int(v,10) & 16 == 16:
+            offsetCurrent = offsetCurrent + 0.256
+        if int(v,10) & 8  == 8:
+            offsetCurrent = offsetCurrent + 0.128
+        if int(v,10) & 4  == 4:
+            offsetCurrent = offsetCurrent + 0.64
+        r = str(offsetCurrent)
+    except:
+        r = "Null."
+    return r
     
 # convert charge Voltage reg to value
 def convertChargeVoltage(v):
     offsetVoltage = 3.504
-    if int(v,10) & 128 == 128:
-        offsetVoltage = offsetVoltage + 0.512
-    if int(v,10) & 64 == 64:
-        offsetVoltage = offsetVoltage + 0.256
-    if int(v,10) & 32 == 32:
-        offsetVoltage = offsetVoltage + 0.128
-    if int(v,10) & 16 == 16:
-        offsetVoltage = offsetVoltage + 0.64
-    if int(v,10) & 8  == 8:
-        offsetVoltage = offsetVoltage + 0.32
-    if int(v,10) & 4  == 4:
-        offsetVoltage = offsetVoltage + 0.16
-    return str(offsetVoltage)
+    try:
+        if int(v,10) & 128 == 128:
+            offsetVoltage = offsetVoltage + 0.512
+        if int(v,10) & 64 == 64:
+            offsetVoltage = offsetVoltage + 0.256
+        if int(v,10) & 32 == 32:
+            offsetVoltage = offsetVoltage + 0.128
+        if int(v,10) & 16 == 16:
+            offsetVoltage = offsetVoltage + 0.64
+        if int(v,10) & 8  == 8:
+            offsetVoltage = offsetVoltage + 0.32
+        if int(v,10) & 4  == 4:
+            offsetVoltage = offsetVoltage + 0.16
+        r = str(offsetVoltage)
+    except:
+        r = "Null."
     
 # save pmu info to file
 def savePmuInfo(s):
@@ -131,7 +148,7 @@ def initMySerial():
     # set gpio pin (BCM GPIO)
     pi.set_mode(RX, pigpio.INPUT)
     pi.set_mode(TX, pigpio.OUTPUT)
-    # fatal exceptions off (so that closing an unopened gpio doesn't error)
+    # fatal exceptions off (so that closing an unopened gpio doesn't Null)
     pigpio.exceptions = False
     # close rx reading
     pi.bb_serial_read_close(RX)
@@ -316,7 +333,10 @@ def softSerialMonitor(no,interval):
                 
 # convert input current reg to value
 def convertInputCurrent(v):
-    tempCurrent = int(v,10) & 7
+    try:
+        tempCurrent = int(v,10) & 7
+    except:
+        tempCurrent = 8
     r = 0
     if tempCurrent == 0:
         r = "0.1"
@@ -334,54 +354,68 @@ def convertInputCurrent(v):
         r = "2.0"
     elif tempCurrent == 7:
         r = "3.0"
+    else:
+        r = "Null."
     return r + "A"
         
 # convert input current reg to value
 def convertInputVoltage(v):
     offsetVoltage = 3.88
-    if int(v,10) & 64 == 64:
-        offsetVoltage = offsetVoltage + 0.64
-    if int(v,10) & 32 == 32:
-        offsetVoltage = offsetVoltage + 0.32
-    if int(v,10) & 16 == 16:
-        offsetVoltage = offsetVoltage + 0.16
-    if int(v,10) & 8  == 8:
-        offsetVoltage = offsetVoltage + 0.08
-    return str(offsetVoltage) + "V"
+    try:
+        if int(v,10) & 64 == 64:
+            offsetVoltage = offsetVoltage + 0.64
+        if int(v,10) & 32 == 32:
+            offsetVoltage = offsetVoltage + 0.32
+        if int(v,10) & 16 == 16:
+            offsetVoltage = offsetVoltage + 0.16
+        if int(v,10) & 8  == 8:
+            offsetVoltage = offsetVoltage + 0.08
+        r = str(offsetVoltage) + "V"
+    except:
+        r = "Null."
+    return r
         
 # convert charge current reg to value
 def convertChargeCurrent(v):
     offsetCurrent = 0.512
-    if int(v,10) & 128 == 128:
-        offsetCurrent = offsetCurrent + 2.048
-    if int(v,10) & 64 == 64:
-        offsetCurrent = offsetCurrent + 1.024
-    if int(v,10) & 32 == 32:
-        offsetCurrent = offsetCurrent + 0.512
-    if int(v,10) & 16 == 16:
-        offsetCurrent = offsetCurrent + 0.256
-    if int(v,10) & 8  == 8:
-        offsetCurrent = offsetCurrent + 0.128
-    if int(v,10) & 4  == 4:
-        offsetCurrent = offsetCurrent + 0.64
-    return str(offsetCurrent) + "A"
+    try:
+        if int(v,10) & 128 == 128:
+            offsetCurrent = offsetCurrent + 2.048
+        if int(v,10) & 64 == 64:
+            offsetCurrent = offsetCurrent + 1.024
+        if int(v,10) & 32 == 32:
+            offsetCurrent = offsetCurrent + 0.512
+        if int(v,10) & 16 == 16:
+            offsetCurrent = offsetCurrent + 0.256
+        if int(v,10) & 8  == 8:
+            offsetCurrent = offsetCurrent + 0.128
+        if int(v,10) & 4  == 4:
+            offsetCurrent = offsetCurrent + 0.64
+        r = str(offsetCurrent) + "A"
+    except:
+        r = "Null.A"
+    return r
     
 # convert charge Voltage reg to value
 def convertChargeVoltage(v):
     offsetVoltage = 3.504
-    if int(v,10) & 128 == 128:
-        offsetVoltage = offsetVoltage + 0.512
-    if int(v,10) & 64 == 64:
-        offsetVoltage = offsetVoltage + 0.256
-    if int(v,10) & 32 == 32:
-        offsetVoltage = offsetVoltage + 0.128
-    if int(v,10) & 16 == 16:
-        offsetVoltage = offsetVoltage + 0.064
-    if int(v,10) & 8  == 8:
-        offsetVoltage = offsetVoltage + 0.032
-    if int(v,10) & 4  == 4:
-        offsetVoltage = offsetVoltage + 0.016
-    return str(offsetVoltage) + "V"
+    try:
+        if int(v,10) & 128 == 128:
+            offsetVoltage = offsetVoltage + 0.512
+        if int(v,10) & 64 == 64:
+            offsetVoltage = offsetVoltage + 0.256
+        if int(v,10) & 32 == 32:
+            offsetVoltage = offsetVoltage + 0.128
+        if int(v,10) & 16 == 16:
+            offsetVoltage = offsetVoltage + 0.064
+        if int(v,10) & 8  == 8:
+            offsetVoltage = offsetVoltage + 0.032
+        if int(v,10) & 4  == 4:
+            offsetVoltage = offsetVoltage + 0.016
+        r = str(offsetVoltage) + "V"
+    except:
+        r = "Null.V"
+    return r
 
 def createFolder(f):
     if os.path.isdir(f) is not True:
@@ -395,32 +429,35 @@ def createFile(f):
 # save pmu info to file
 def savePmuInfo(s):
     global logFolder,logFile,tmpFolder,tmpFile
-    strPmuInfo = s.split("|")
-    strPmuInfoItem = ""
-    strPmuInfoItem = strPmuInfoItem + "ID:"
-    strPmuInfoItem = strPmuInfoItem + strPmuInfo[0]
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "DumpEnergy:"
-    strPmuInfoItem = strPmuInfoItem + strPmuInfo[1]
-    strPmuInfoItem = strPmuInfoItem + "%,"
-    strPmuInfoItem = strPmuInfoItem + "BatVoltage:"
-    strPmuInfoItem = strPmuInfoItem + convertBatVoltage(strPmuInfo[2])
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "InputC:"
-    strPmuInfoItem = strPmuInfoItem + convertInputCurrent(strPmuInfo[3])
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "InputV:"
-    strPmuInfoItem = strPmuInfoItem + convertInputVoltage(strPmuInfo[4])
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "ChargeC:"
-    strPmuInfoItem = strPmuInfoItem + convertChargeCurrent(strPmuInfo[5])
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "ChargeV:"
-    strPmuInfoItem = strPmuInfoItem + convertChargeVoltage(strPmuInfo[6])
-    strPmuInfoItem = strPmuInfoItem + ","
-    strPmuInfoItem = strPmuInfoItem + "LogTime:"
-    strPmuInfoItem = strPmuInfoItem + time.strftime('[%Y-%m-%d]-%H:%M:%S',time.localtime(time.time()))
-    strPmuInfoItem = strPmuInfoItem + "\n"
+    try:
+        strPmuInfo = s.split("|")
+        strPmuInfoItem = ""
+        strPmuInfoItem = strPmuInfoItem + "ID:"
+        strPmuInfoItem = strPmuInfoItem + strPmuInfo[0]
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "DumpEnergy:"
+        strPmuInfoItem = strPmuInfoItem + strPmuInfo[1]
+        strPmuInfoItem = strPmuInfoItem + "%,"
+        strPmuInfoItem = strPmuInfoItem + "BatVoltage:"
+        strPmuInfoItem = strPmuInfoItem + convertBatVoltage(strPmuInfo[2])
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "InputC:"
+        strPmuInfoItem = strPmuInfoItem + convertInputCurrent(strPmuInfo[3])
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "InputV:"
+        strPmuInfoItem = strPmuInfoItem + convertInputVoltage(strPmuInfo[4])
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "ChargeC:"
+        strPmuInfoItem = strPmuInfoItem + convertChargeCurrent(strPmuInfo[5])
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "ChargeV:"
+        strPmuInfoItem = strPmuInfoItem + convertChargeVoltage(strPmuInfo[6])
+        strPmuInfoItem = strPmuInfoItem + ","
+        strPmuInfoItem = strPmuInfoItem + "LogTime:"
+        strPmuInfoItem = strPmuInfoItem + time.strftime('[%Y-%m-%d]-%H:%M:%S',time.localtime(time.time()))
+        strPmuInfoItem = strPmuInfoItem + "\n"
+    except:
+        strPmuInfoItem = "Null"
     createFolder(logFolder)
     logFile = logFolder + "pipeye_" + time.strftime('[%Y-%m-%d]' + ".txt")
     createFile(logFile)
